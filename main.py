@@ -126,7 +126,7 @@ class KarikurinnnBot(commands.Bot):
         conn.commit()
         conn.close()
         
-        # 🚀 INICIALIZAÇÃO CORRIGIDA E ALINHADA PARA A HOCPEDAGEM EM NUVEM (RENDER)
+        # 🚀 Linhas corrigidas e alinhadas sob a mesma margem (8 espaços/2 tabs)
         loop = asyncio.get_event_loop()
         porta_nuvem = int(os.environ.get("PORT", 5000))
         loop.create_task(app.run_task(host="0.0.0.0", port=porta_nuvem))
@@ -136,7 +136,38 @@ class KarikurinnnBot(commands.Bot):
         print("✅ Todos os comandos de moedas e website carregados!")
 
 bot = KarikurinnnBot()
+# =======================================================
+# 🌸 PARTE 3: CONFIGURAÇÃO CENTRAL DO BOT DO DISCORD
+# =======================================================
 
+MY_OWNER_ID = 1284950910312906854
+intents = discord.Intents.all()
+
+class KarikurinnnBot(commands.Bot):
+    def __init__(self):
+        super().__init__(command_prefix="k!", intents=intents, help_command=None)
+        self.em_manutencao = False
+
+    async def setup_hook(self):
+        # Cria a base de dados unificada automaticamente
+        conn = sqlite3.connect("karikurinnn_economia.db")
+        cursor = conn.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS usuarios (id INTEGER PRIMARY KEY, algodao_doce INTEGER DEFAULT 0, ultimo_daily TEXT, ultimo_mensal TEXT)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS comandos_custom (nome TEXT PRIMARY KEY, resposta TEXT, criador_id INTEGER)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS inventarios (usuario_id INTEGER, item TEXT, data_compra TEXT)")
+        conn.commit()
+        conn.close()
+        
+        # 🚀 Linhas corrigidas e alinhadas sob a mesma margem (8 espaços/2 tabs)
+        loop = asyncio.get_event_loop()
+        porta_nuvem = int(os.environ.get("PORT", 5000))
+        loop.create_task(app.run_task(host="0.0.0.0", port=porta_nuvem))
+        
+        print("⏳ Sincronizando novos comandos com o Discord...")
+        await self.tree.sync()
+        print("✅ Todos os comandos de moedas e website carregados!")
+
+bot = KarikurinnnBot()
 
 # =======================================================
 # 🧮 PARTE 4: FUNÇÕES AUXILIARES E EVENTOS DO CHAT
