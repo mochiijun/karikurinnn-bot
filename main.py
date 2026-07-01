@@ -27,7 +27,6 @@ except ImportError:
 # 🪄 PARTE 1: GERADOR DO WEBSITE OFICIAL E DATABASES
 # =======================================================
 
-# Cria a pasta e o arquivo HTML do Site Oficial automaticamente
 if not os.path.exists("site_templates"):
     os.makedirs("site_templates")
 
@@ -56,10 +55,7 @@ if not os.path.exists("site_templates/index.html"):
                 <h1>🌸 Karikurinnn Bot Oficial 🌸</h1>
                 <p>O robô mais fofo de economia de algodão-doce e interações do Discord!</p>
                 <div class="divider">𖥸・┈┈┈┈・┈┈┈┈・𖥸</div>
-                
                 <h2>🏆 Placar Global de Ricaços (TOP 5)</h2>
-                <p>Estes são os membros com as maiores carteiras de Algodão Doce atualmente:</p>
-                
                 <table class="ranking-table">
                     <thead>
                         <tr>
@@ -72,8 +68,8 @@ if not os.path.exists("site_templates/index.html"):
                         {% for jogador in ranking %}
                         <tr>
                             <td>{{ loop.index }}º Lugar</td>
-                            <td>{{ jogador }}</td>
-                            <td>{% if jogador >= 999999999999 %}∞ Infinitos{% else %}{{ jogador }} 🍧{% endif %}</td>
+                            <td>{{ jogador[0] }}</td>
+                            <td>{% if jogador[1] >= 999999999999 %}∞ Infinitos{% else %}{{ jogador[1] }} 🍧{% endif %}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -84,7 +80,6 @@ if not os.path.exists("site_templates/index.html"):
         </body>
         </html>
         """)
-    print("✨ Arquivos visuais do Website criados com sucesso!")
 
 # =======================================================
 # 🔌 PARTE 2: SERVIDOR WEB INTERNO (QUART)
@@ -103,7 +98,6 @@ async def home():
     with open("site_templates/index.html", "r", encoding="utf-8") as f:
         template = f.read()
     return await render_template_string(template, ranking=dados_ranking)
-
 # =======================================================
 # 🌸 PARTE 3: CONFIGURAÇÃO CENTRAL DO BOT DO DISCORD
 # =======================================================
@@ -117,7 +111,6 @@ class KarikurinnnBot(commands.Bot):
         self.em_manutencao = False
 
     async def setup_hook(self):
-        # Cria a base de dados unificada automaticamente
         conn = sqlite3.connect("karikurinnn_economia.db")
         cursor = conn.cursor()
         cursor.execute("CREATE TABLE IF NOT EXISTS usuarios (id INTEGER PRIMARY KEY, algodao_doce INTEGER DEFAULT 0, ultimo_daily TEXT, ultimo_mensal TEXT)")
@@ -126,49 +119,15 @@ class KarikurinnnBot(commands.Bot):
         conn.commit()
         conn.close()
         
-        # 🚀 Linhas corrigidas e alinhadas sob a mesma margem (8 espaços/2 tabs)
         loop = asyncio.get_event_loop()
         porta_nuvem = int(os.environ.get("PORT", 5000))
         loop.create_task(app.run_task(host="0.0.0.0", port=porta_nuvem))
         
-        print("⏳ Sincronizando novos comandos com o Discord...")
+        print("⏳ Sincronizando novos comandos...")
         await self.tree.sync()
         print("✅ Todos os comandos de moedas e website carregados!")
 
 bot = KarikurinnnBot()
-# =======================================================
-# 🌸 PARTE 3: CONFIGURAÇÃO CENTRAL DO BOT DO DISCORD
-# =======================================================
-
-MY_OWNER_ID = 1284950910312906854
-intents = discord.Intents.all()
-
-class KarikurinnnBot(commands.Bot):
-    def __init__(self):
-        super().__init__(command_prefix="k!", intents=intents, help_command=None)
-        self.em_manutencao = False
-
-    async def setup_hook(self):
-        # Cria a base de dados unificada automaticamente
-        conn = sqlite3.connect("karikurinnn_economia.db")
-        cursor = conn.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS usuarios (id INTEGER PRIMARY KEY, algodao_doce INTEGER DEFAULT 0, ultimo_daily TEXT, ultimo_mensal TEXT)")
-        cursor.execute("CREATE TABLE IF NOT EXISTS comandos_custom (nome TEXT PRIMARY KEY, resposta TEXT, criador_id INTEGER)")
-        cursor.execute("CREATE TABLE IF NOT EXISTS inventarios (usuario_id INTEGER, item TEXT, data_compra TEXT)")
-        conn.commit()
-        conn.close()
-        
-        # 🚀 Linhas corrigidas e alinhadas sob a mesma margem (8 espaços/2 tabs)
-        loop = asyncio.get_event_loop()
-        porta_nuvem = int(os.environ.get("PORT", 5000))
-        loop.create_task(app.run_task(host="0.0.0.0", port=porta_nuvem))
-        
-        print("⏳ Sincronizando novos comandos com o Discord...")
-        await self.tree.sync()
-        print("✅ Todos os comandos de moedas e website carregados!")
-
-bot = KarikurinnnBot()
-
 # =======================================================
 # 🧮 PARTE 4: FUNÇÕES AUXILIARES E EVENTOS DO CHAT
 # =======================================================
@@ -204,10 +163,9 @@ def checar_dono():
 
 @bot.event
 async def on_ready():
-    print(f"🌸 Karikurinnn está online! Acesse o site em: http://localhost:5000")
+    print(f"🌸 Karikurinnn está online!")
     await bot.change_presence(activity=discord.Game(name="k!moedas_ajuda | 💖"))
     
-    # Carrega comandos dinâmicos salvos na database
     conn = sqlite3.connect("karikurinnn_economia.db")
     cursor = conn.cursor()
     cursor.execute("SELECT nome, resposta FROM comandos_custom")
@@ -231,7 +189,6 @@ async def on_message(message):
             await message.reply(f"🌸 **|** {stylized_fonte('Modo de manutencao encerrado')}!")
         return
     await bot.process_commands(message)
-
 # =======================================================
 # 🍬 PARTE 5: CENTRAL DE ECONOMIA DO ALGODÃO DOCE
 # =======================================================
@@ -245,11 +202,11 @@ async def moedas_ajuda(ctx: commands.Context):
     embed.add_field(name="`k!site` - Veja o ranking no navegador", value="🌐 Site Oficial", inline=True)
     await ctx.send(embed=embed)
 
-@bot.hybrid_command(name="site", description="Mostra o link do site oficial estético do Karikurinnn.")
+@bot.hybrid_command(name="site", description="Mostra o link do site oficial estético.")
 async def site(ctx: commands.Context):
     embed = discord.Embed(
         title=f"🌐 {stylized_fonte('Site Oficial Karikurinnn')}",
-        description="Venha conferir nossa página oficial! Veja quem é o mais rico do servidor direto do seu navegador.\n\n🔗 **Acesse aqui:** [http://localhost:5000](http://localhost:5000)",
+        description="Veja quem é o mais rico do servidor direto do seu navegador!\n\n🔗 Link: http://localhost:5000",
         color=discord.Color.from_rgb(186, 85, 211)
     )
     await ctx.send(embed=embed)
@@ -321,7 +278,7 @@ async def ranking(ctx: commands.Context):
     await ctx.send(embed=embed)
 
 @bot.hybrid_command(name="comprar", description="Lojinha do servidor.")
-async def comprar(ctx: commands.Context, item: str = None):
+async def abrir_comprar(ctx: commands.Context, item: str = None):
     itens_loja = {"anel": 5000, "badge": 2000, "tag": 10000}
     if not item:
         lista = "\n".join([f"• **{k.capitalize()}**: {v} 🍧" for k, v in itens_loja.items()])
@@ -334,7 +291,6 @@ async def comprar(ctx: commands.Context, item: str = None):
     executar_query("UPDATE usuarios SET algodao_doce = algodao_doce - ? WHERE id = ?", (preco, ctx.author.id))
     executar_query("INSERT INTO inventarios (usuario_id, item, data_compra) VALUES (?, ?, ?)", (ctx.author.id, escolha, datetime.now().strftime("%Y-%m-%d")))
     await ctx.send(f"🛍️ **|** COMPRA CONCLUÍDA! {ctx.author.mention} comprou um **{escolha.capitalize()}** por **{preco}** 🍧!")
-
 # =======================================================
 # 👑 PARTE 6: EXCLUSIVOS DE DONO E DIAGNÓSTICO
 # =======================================================
@@ -344,15 +300,12 @@ async def comprar(ctx: commands.Context, item: str = None):
 async def criar_comando(ctx: commands.Context, nome: str, *, resposta: str):
     if ctx.author.id != MY_OWNER_ID:
         return await ctx.send("❌ **[ACESSO NEGADO]** Apenas o dono supremo do Karikurinnn pode usar este comando! 🛡️")
-        
     nome_limpo = nome.lower().strip().replace("k!", "").replace("/", "")
     try:
         executar_query("INSERT OR REPLACE INTO comandos_custom (nome, resposta, criador_id) VALUES (?, ?, ?)", (nome_limpo, resposta, ctx.author.id))
-        
         @commands.command(name=nome_limpo)
         async def novo_comando(inner_ctx, resp=resposta): await inner_ctx.send(resp)
         bot.add_command(novo_comando)
-        
         await ctx.send(f"✅ Comando hibridizado `k!{nome_limpo}` criado e salvo na database com sucesso!")
     except Exception as e:
         await ctx.send(f"❌ Erro ao registrar comando: {e}")
@@ -385,26 +338,5 @@ async def tirar_infinito(ctx, alvo: discord.User):
     executar_query("UPDATE usuarios SET algodao_doce = 0 WHERE id = ?", (alvo.id,))
     await ctx.send(f"👑 Poder infinito removido de {alvo.mention}.")
 
-
-# ⚠️ SUBSTITUA PELO SEU TOKEN ATIV DO DISCORD AQUI EMBAIXO:
-bot.run('MTQ1NTg4MzI5NDg4NDIzNzQ0OQ.G8mVKI.5CPNHfZUDtBA8MoElvqj-dAku18YHm8gbAn9o4')
-
-# --- STATUS ROTATIVO FANTÁSTICO NO PERFIL ---
-async def mudar_status_loop():
-    await bot.wait_until_ready()
-    while not bot.is_closed():
-        # Status 1: Mostrando o site público
-        await bot.change_presence(activity=discord.Streaming(name="🌐 karikurinnn.ngrok-free.app", url="https://twitch.tv"))
-        await asyncio.sleep(15)
-        # Status 2: Chamando para jogar
-        await bot.change_presence(activity=discord.Game(name="🍧 Use k!moedas_ajuda | 💖"))
-        await asyncio.sleep(15)
-
-# Adicione essa linha logo no final da sua função on_ready para ativar o loop:
-bot.loop.create_task(mudar_status_loop())
-
-        # Inicia o Servidor do WebSite integrado adaptado para nuvens gratuitas
-        loop = asyncio.get_event_loop()
-        porta_nuvem = int(os.environ.get("PORT", 5000)) # Pega a porta da hospedagem automaticamente
-        loop.create_task(app.run_task(host="0.0.0.0", port=porta_nuvem))
-
+# ⚠️ GERE UM TOKEN TOTALMENTE NOVO NO PERFIL DO BOT E INSIRA ABAIXO:
+bot.run('MTQ1NTg4MzI5NDg4NDIzNzQ0OQ.GOTZAG.YIGoRFz9z7zJ-ZnkyEvj2-W7vFWsp6yvQUW-ZA')
