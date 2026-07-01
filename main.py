@@ -126,15 +126,17 @@ class KarikurinnnBot(commands.Bot):
         conn.commit()
         conn.close()
         
-        # Inicia o Servidor do WebSite integrado em paralelo
+        # 🚀 INICIALIZAÇÃO CORRIGIDA E ALINHADA PARA A HOCPEDAGEM EM NUVEM (RENDER)
         loop = asyncio.get_event_loop()
-        loop.create_task(app.run_task(host="0.0.0.0", port=5000))
+        porta_nuvem = int(os.environ.get("PORT", 5000))
+        loop.create_task(app.run_task(host="0.0.0.0", port=porta_nuvem))
         
         print("⏳ Sincronizando novos comandos com o Discord...")
         await self.tree.sync()
         print("✅ Todos os comandos de moedas e website carregados!")
 
 bot = KarikurinnnBot()
+
 
 # =======================================================
 # 🧮 PARTE 4: FUNÇÕES AUXILIARES E EVENTOS DO CHAT
